@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SewaSathi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --text-tertiary: #737373;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 32px 48px;
+            width: 100%;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-actions a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 48px;
+            margin-top: -5vh;
+        }
+
+        .hero-title {
+            font-size: 104px;
+            font-weight: 500;
+            line-height: 1.1;
+            letter-spacing: -3px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 48px; /* Adjusted to fit layout well */
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+
+        .hero-identity {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            margin-bottom: 48px;
+        }
+
+        .cta-container {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .btn-primary {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            padding: 18px 32px;
+            border-radius: 40px;
+            color: white;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 400;
+        }
+        
+        .btn-secondary:hover {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        /* Footer Info */
+        .footer-info {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            padding: 48px;
+            align-items: end;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: auto;
+        }
+
+        .footer-left {
+            text-align: left;
+            color: var(--text-tertiary);
+        }
+
+        .footer-center {
+            text-align: left;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .footer-right {
+            text-align: right;
+            color: var(--text-tertiary);
+        }
+        
+        @media (max-width: 1024px) {
+            .hero-title { font-size: 72px; }
+            .hero-subtitle { font-size: 32px; }
+            .footer-info {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .footer-center { margin: 0; }
+            .footer-right { text-align: left; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.914 3.06579 15.6946 3.99616 17.1895C4.24075 17.5826 4.75052 17.7027 5.16347 17.472C5.59013 17.2335 5.7601 16.6974 5.53982 16.2625C4.94576 15.0898 4.6 13.5936 4.6 12C4.6 7.91309 7.91309 4.6 12 4.6C16.0869 4.6 19.4 7.91309 19.4 12C19.4 16.0869 16.0869 19.4 12 19.4C10.5977 19.4 9.27419 19.043 8.11893 18.4237C7.6834 18.1901 7.15177 18.3582 6.92082 18.7905C6.69176 19.2193 6.8483 19.7544 7.27663 19.9868C8.68393 20.7497 10.2862 21.1852 12 21.5Z" fill="white"/>
+                    <circle cx="10" cy="9.5" r="3.5" fill="white"/>
+                </svg>
+            </div>
+            SEWASATHI
+        </div>
+        <div class="nav-links">
+            <a href="#">HOME</a>
+            <a href="#">REPORT ISSUE</a>
+            <a href="#">MY REPORT</a>
+            <a href="#">CONTACT US</a>
+        </div>
+        <div class="nav-actions">
+            <a href="#">AUTHORITY LOGIN</a>
+        </div>
+    </nav>
+
+    <main>
+        <h1 class="hero-title">REPORT &bull; TRACK<br>RESOLVE</h1>
+        <h2 class="hero-subtitle">Track every complaint from report to resolution.</h2>
+        <h3 class="hero-identity">Sewa for service. Sathi for a companion.</h3>
+        
+        <div class="cta-container">
+            <a href="#">
+                <button class="btn-primary">REPORT AN ISSUE &rarr;</button>
+            </a>
+            <a href="#" class="btn-secondary">MY REPORT</a>
+        </div>
+    </main>
+
+    <div class="footer-info">
+        <div class="footer-left">
+            See a problem? Report it.
+        </div>
+        <div class="footer-center">
+            SewaSathi connects citizens with the authorities responsible for fixing the problems around them.
+        </div>
+        <div class="footer-right">
+            [Report &bull; Track &bull; Resolve]
+        </div>
+    </div>
+
+</body>
+</html>
