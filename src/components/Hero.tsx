@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface HeroProps {
   onReportIssue: () => void;
@@ -48,7 +48,7 @@ export const Hero: React.FC<HeroProps> = ({
         Track every complaint from report to resolution.
       </motion.p>
 
-      {/* Hero Buttons: Primary (← REPORT AN ISSUE) & Secondary (MY REPORT) */}
+      {/* Hero Buttons: Primary (REPORT AN ISSUE →) & Secondary (MY REPORT) */}
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -62,8 +62,8 @@ export const Hero: React.FC<HeroProps> = ({
           className="w-full sm:w-auto min-w-[200px] group relative inline-flex items-center justify-center rounded-full px-8 py-3.5 text-base font-semibold text-white bg-red-700 hover:bg-red-800 border border-red-700 hover:border-red-800 transition-all duration-200 shadow-md shadow-red-900/15 cursor-pointer focus:outline-none active:scale-[0.98]"
         >
           <span className="relative z-10 flex items-center gap-2 tracking-wide">
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             <span>REPORT AN ISSUE</span>
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </span>
         </button>
 

@@ -219,33 +219,33 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
       case 'RESOLVED':
         return {
           label: 'Resolved',
-          dot: 'bg-red-600',
-          badge: 'bg-red-50 text-red-800 border-red-200'
+          dot: 'bg-emerald-600',
+          badge: 'bg-emerald-50 text-emerald-900 border-emerald-300 font-semibold'
         };
       case 'IN_PROGRESS':
         return {
           label: 'In Progress',
-          dot: 'bg-emerald-600 animate-pulse',
-          badge: 'bg-emerald-50 text-emerald-900 border-emerald-300 font-semibold'
+          dot: 'bg-teal-500 animate-pulse',
+          badge: 'bg-teal-50 text-teal-900 border-teal-200 font-medium'
         };
       case 'ASSIGNED':
         return {
           label: 'Assigned',
-          dot: 'bg-emerald-500',
-          badge: 'bg-emerald-50/80 text-emerald-800 border-emerald-200'
+          dot: 'bg-yellow-500',
+          badge: 'bg-yellow-50 text-yellow-900 border-yellow-200 font-medium'
         };
       case 'VERIFIED':
         return {
           label: 'Verified',
-          dot: 'bg-emerald-500',
-          badge: 'bg-emerald-50/60 text-emerald-800 border-emerald-200'
+          dot: 'bg-amber-500',
+          badge: 'bg-amber-50 text-amber-900 border-amber-200 font-medium'
         };
       case 'REPORTED':
       default:
         return {
           label: 'Reported',
-          dot: 'bg-neutral-500',
-          badge: 'bg-neutral-100 text-neutral-800 border-neutral-200'
+          dot: 'bg-red-600',
+          badge: 'bg-red-50 text-red-900 border-red-200 font-medium'
         };
     }
   };
@@ -515,8 +515,8 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
                   <div className="my-2.5 p-2 rounded-xl bg-neutral-50 border border-neutral-100">
                     <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 mb-1">
                       <span>Status Flow</span>
-                      <span className={`font-bold ${isResolved ? 'text-red-700' : 'text-emerald-700'}`}>
-                        {isResolved ? '✓ Resolved' : `Stage ${currentStepIdx + 1} of 5`}
+                      <span className={`font-bold ${isResolved ? 'text-emerald-700' : 'text-red-700'}`}>
+                        {isResolved ? '✓ Resolved' : `Stage ${currentStepIdx + 1} of 5 (${LIFECYCLE_SEQUENCE[currentStepIdx]?.label || 'Reported'})`}
                       </span>
                     </div>
 
@@ -524,18 +524,21 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
                       {LIFECYCLE_SEQUENCE.map((stg, sIdx) => {
                         const isReached = sIdx <= currentStepIdx;
                         const isCurrent = sIdx === currentStepIdx;
-                        const isResolvedStage = stg.status === 'RESOLVED';
                         
                         let barColor = 'bg-neutral-200';
                         if (isReached) {
-                          barColor = isResolvedStage ? 'bg-red-600' : 'bg-emerald-600';
+                          if (sIdx === 0) barColor = 'bg-red-500';
+                          else if (sIdx === 1) barColor = 'bg-amber-500';
+                          else if (sIdx === 2) barColor = 'bg-yellow-500';
+                          else if (sIdx === 3) barColor = 'bg-teal-500';
+                          else if (sIdx === 4) barColor = 'bg-emerald-600';
                         }
 
                         return (
                           <div key={stg.status} className="flex flex-col gap-0.5 items-center">
                             <div
                               className={`h-1.5 w-full rounded-full transition-colors ${barColor} ${
-                                isCurrent && !isResolvedStage ? 'animate-pulse' : ''
+                                isCurrent && sIdx < 4 ? 'animate-pulse' : ''
                               }`}
                             />
                           </div>

@@ -93,16 +93,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         )}
 
-        {/* Right Side: Distinct Authority Button */}
+        {/* Right Side: Distinct Authority Button in a Box */}
         <div className="flex items-center gap-3">
           {isAuthorityLoggedIn ? (
             <div className="flex items-center gap-2">
               <button
                 id="nav-authority-active-btn"
                 onClick={onOpenAuthorityLogin}
-                className={`px-4 py-2 rounded-full border transition-all duration-200 cursor-pointer flex items-center gap-2 font-mono text-xs font-semibold ${
+                className={`px-3.5 py-2 rounded-lg border transition-all duration-200 cursor-pointer flex items-center gap-2 font-mono text-xs font-semibold ${
                   isDashboardActive
-                    ? 'bg-cyan-600 text-white border-cyan-700 shadow-[0_0_15px_rgba(8,145,178,0.25)]'
+                    ? 'bg-cyan-600 text-white border-cyan-700 shadow-sm'
                     : 'bg-cyan-50 border-cyan-300 text-cyan-800 hover:bg-cyan-600 hover:text-white hover:border-cyan-600'
                 }`}
               >
@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="nav-logout-btn"
                 onClick={onLogoutAuthority}
                 title="Log Out Authority"
-                className="p-2 text-neutral-500 hover:text-red-600 rounded-full border border-neutral-200 hover:border-red-300 transition-colors cursor-pointer"
+                className="p-2 text-neutral-500 hover:text-red-600 rounded-lg border border-neutral-200 hover:border-red-300 transition-colors cursor-pointer"
               >
                 <LogOut size={15} />
               </button>
@@ -124,13 +124,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="nav-authority-login-btn"
               onClick={onOpenAuthorityLogin}
-              className="group px-4 py-2 rounded-full bg-neutral-50 hover:bg-cyan-50 border border-neutral-300 hover:border-cyan-500 text-neutral-800 hover:text-cyan-900 transition-all duration-200 cursor-pointer flex items-center gap-2 font-mono text-xs font-semibold shadow-xs active:scale-95"
+              className="group px-3.5 py-2 rounded-lg bg-neutral-50 hover:bg-neutral-100 border border-neutral-300 hover:border-neutral-400 text-neutral-900 transition-all duration-200 cursor-pointer flex items-center gap-2.5 font-mono text-xs font-semibold shadow-2xs active:scale-98"
             >
-              <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-800 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
-                <ShieldCheck size={12} />
+              <div className="w-5 h-5 rounded-md bg-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:bg-red-700 group-hover:text-white transition-colors">
+                <ShieldCheck size={13} />
               </div>
               <span>Authority Login</span>
-              <span className="text-neutral-400 group-hover:text-cyan-700">→</span>
+              <span className="text-neutral-400 group-hover:text-neutral-800 transition-colors">→</span>
             </button>
           )}
         </div>

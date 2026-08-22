@@ -67,40 +67,29 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
   const getStepVisual = (idx: number, stepStatus: ReportStatus) => {
     const isCompleted = idx < currentStepIndex;
     const isCurrent = idx === currentStepIndex;
-    const isResolved = stepStatus === 'RESOLVED';
     const isReached = idx <= currentStepIndex;
 
-    if (isResolved && isReached) {
-      return {
-        badgeBg: 'bg-red-700 text-white shadow-xs border-red-700 font-bold',
-        textColor: 'text-red-700 font-bold',
-        pillBg: 'bg-red-50 border-red-200 text-red-900',
-        barColor: 'bg-red-600',
-      };
-    }
+    const STAGE_THEMES = [
+      { badge: 'bg-red-600 text-white border-red-600', text: 'text-red-700 font-bold', bar: 'bg-red-500' },
+      { badge: 'bg-amber-500 text-white border-amber-500', text: 'text-amber-700 font-bold', bar: 'bg-amber-500' },
+      { badge: 'bg-yellow-500 text-white border-yellow-500', text: 'text-yellow-700 font-bold', bar: 'bg-yellow-500' },
+      { badge: 'bg-teal-600 text-white border-teal-600', text: 'text-teal-700 font-bold', bar: 'bg-teal-500' },
+      { badge: 'bg-emerald-600 text-white border-emerald-600', text: 'text-emerald-700 font-bold', bar: 'bg-emerald-600' },
+    ];
 
-    if (isCurrent) {
-      return {
-        badgeBg: 'bg-emerald-600 text-white shadow-xs border-emerald-600 font-bold animate-pulse',
-        textColor: 'text-emerald-800 font-bold',
-        pillBg: 'bg-emerald-50 border-emerald-300 text-emerald-950',
-        barColor: 'bg-emerald-600',
-      };
-    }
+    const currentTheme = STAGE_THEMES[idx] || STAGE_THEMES[0];
 
-    if (isCompleted) {
+    if (isReached) {
       return {
-        badgeBg: 'bg-emerald-600 text-white border-emerald-600 font-bold',
-        textColor: 'text-emerald-800 font-semibold',
-        pillBg: 'bg-emerald-50/70 border-emerald-200 text-emerald-900',
-        barColor: 'bg-emerald-600',
+        badgeBg: `${currentTheme.badge} shadow-xs font-bold ${isCurrent && idx < 4 ? 'animate-pulse' : ''}`,
+        textColor: currentTheme.text,
+        barColor: currentTheme.bar,
       };
     }
 
     return {
       badgeBg: 'bg-neutral-100 text-neutral-400 border-neutral-200',
       textColor: 'text-neutral-400 font-normal',
-      pillBg: 'bg-white border-neutral-200 text-neutral-400',
       barColor: 'bg-neutral-200',
     };
   };
@@ -199,11 +188,13 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
               <div className="mt-3.5 pt-3 border-t border-neutral-200/70 grid grid-cols-5 gap-1">
                 {LIFECYCLE_STEPS.map((stg, sIdx) => {
                   const isReached = sIdx <= currentStepIndex;
-                  const isResolved = stg.status === 'RESOLVED';
                   let barBg = 'bg-neutral-200';
-
                   if (isReached) {
-                    barBg = isResolved ? 'bg-red-600' : 'bg-emerald-600';
+                    if (sIdx === 0) barBg = 'bg-red-500';
+                    else if (sIdx === 1) barBg = 'bg-amber-500';
+                    else if (sIdx === 2) barBg = 'bg-yellow-500';
+                    else if (sIdx === 3) barBg = 'bg-teal-500';
+                    else if (sIdx === 4) barBg = 'bg-emerald-600';
                   }
 
                   return (
