@@ -307,6 +307,11 @@ export function getUserUpvotes(): string[] {
   }
 }
 
+export function hasUserUpvoted(reportId: string): boolean {
+  const votes = getUserUpvotes();
+  return votes.includes(reportId);
+}
+
 export function saveUserUpvote(reportId: string): void {
   try {
     const votes = getUserUpvotes();
@@ -318,12 +323,32 @@ export function saveUserUpvote(reportId: string): void {
   }
 }
 
+export function removeUserUpvote(reportId: string): void {
+  try {
+    const votes = getUserUpvotes();
+    const filtered = votes.filter((id) => id !== reportId);
+    localStorage.setItem(USER_VOTES_KEY, JSON.stringify(filtered));
+  } catch (err) {
+    console.error('Failed to remove user upvote', err);
+  }
+}
+
 /**
- * Upvote / Endorse an existing issue
- * Increases priority and bumps issue up in the civic queue
+ * Toggle Upvote / Endorse an existing issue
+ * Enforces one upvote per person (adds 1 vote if not voted, or removes vote if already voted).
+ * Automatically updates priority score and timeline.
  */
-export function upvoteReport(reportId: string): { updatedReports: ComplaintReport[]; success: boolean; newPriority: PriorityLevel } {
+export function toggleUpvoteReport(reportId: string): { 
+  updatedReports: ComplaintReport[]; 
+  success: boolean; 
+  isUpvoted: boolean; 
+  newPriority: PriorityLevel 
+} {
   const currentReports = getStoredReports();
+  const userVotes = getUserUpvotes();
+  const alreadyUpvoted = userVotes.includes(reportId);
+  const isNowUpvoted = !alreadyUpvoted;
+
   let updatedPriority: PriorityLevel = 'Medium';
   let isSuccess = false;
 
@@ -334,14 +359,16 @@ export function upvoteReport(reportId: string): { updatedReports: ComplaintRepor
   const updated = currentReports.map((report) => {
     if (report.id === reportId) {
       isSuccess = true;
-      const newUpvotes = (report.upvotes || 0) + 1;
+      const currentVotes = report.upvotes || 0;
+      // Single vote guarantee: toggle between +1 and -1 (never infinite)
+      const newUpvotes = isNowUpvoted ? currentVotes + 1 : Math.max(0, currentVotes - 1);
       const reportCount = report.reportCount || 1;
       const { priority, score } = calculatePriorityScore(reportCount, newUpvotes, report.category);
       updatedPriority = priority;
 
       const timeline = [...report.timeline];
-      // Add milestone note if priority elevated
-      if (priority !== report.priority && (priority === 'Emergency' || priority === 'High')) {
+      // Add milestone note if priority elevated on new upvote
+      if (isNowUpvoted && priority !== report.priority && (priority === 'Emergency' || priority === 'High')) {
         timeline.push({
           id: `t-up-${Date.now()}`,
           status: report.status,
@@ -364,10 +391,31 @@ export function upvoteReport(reportId: string): { updatedReports: ComplaintRepor
 
   if (isSuccess) {
     saveReports(updated);
-    saveUserUpvote(reportId);
+    if (isNowUpvoted) {
+      saveUserUpvote(reportId);
+    } else {
+      removeUserUpvote(reportId);
+    }
   }
 
-  return { updatedReports: updated, success: isSuccess, newPriority: updatedPriority };
+  return { 
+    updatedReports: updated, 
+    success: isSuccess, 
+    isUpvoted: isNowUpvoted, 
+    newPriority: updatedPriority 
+  };
+}
+
+/**
+ * Upvote / Endorse an existing issue (One person can only vote once, clicking again toggles/undoes vote)
+ */
+export function upvoteReport(reportId: string): { 
+  updatedReports: ComplaintReport[]; 
+  success: boolean; 
+  isUpvoted: boolean; 
+  newPriority: PriorityLevel 
+} {
+  return toggleUpvoteReport(reportId);
 }
 
 /**

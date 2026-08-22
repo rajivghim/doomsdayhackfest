@@ -556,13 +556,14 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
                     <button
                       type="button"
                       onClick={(e) => handleUpvote(e, report.id)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border ${
+                      title={hasUpvoted ? 'You upvoted this complaint (Click to undo)' : 'Upvote to raise municipal priority'}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
                         hasUpvoted
-                          ? 'bg-red-700 text-white border-red-700'
+                          ? 'bg-red-700 text-white border-red-700 shadow-2xs'
                           : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-700 border-neutral-200'
                       }`}
                     >
-                      <ThumbsUp size={12} className={hasUpvoted ? 'fill-white' : ''} />
+                      <ThumbsUp size={12} className={hasUpvoted ? 'fill-white text-white' : 'text-neutral-500'} />
                       <span>{report.upvotes}</span>
                     </button>
 

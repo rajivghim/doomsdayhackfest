@@ -10,7 +10,6 @@ import { AuthorityLoginModal } from './components/AuthorityLoginModal';
 import { AuthorityDashboard } from './components/AuthorityDashboard';
 import { SewaSathiLogo } from './components/SewaSathiLogo';
 import { ComplaintReport } from './types';
-import { getStoredReports } from './utils/reportsStorage';
 
 export const App: React.FC = () => {
   const [authLoginModalOpen, setAuthLoginModalOpen] = useState(false);
@@ -53,16 +52,6 @@ export const App: React.FC = () => {
 
   const handleSelectReport = (report: ComplaintReport) => {
     setSelectedReportForDetail(report);
-  };
-
-  const handleTrackSampleReport = (reportId: string) => {
-    const all = getStoredReports();
-    const found = all.find((r) => r.id === reportId);
-    if (found) {
-      setSelectedReportForDetail(found);
-    } else {
-      scrollToSection('my-reports-section');
-    }
   };
 
   const handleAuthorityButtonClick = () => {
@@ -114,7 +103,6 @@ export const App: React.FC = () => {
             <Hero
               onReportIssue={() => scrollToSection('report-issue-section')}
               onViewMyReports={() => scrollToSection('my-reports-section')}
-              onTrackSampleReport={handleTrackSampleReport}
             />
 
             {/* 2. Scroll Down -> Point 1: Report Issue Form Section */}

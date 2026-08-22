@@ -130,14 +130,15 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
               <button
                 type="button"
                 onClick={handleUpvote}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border ${
+                title={hasUpvoted ? 'You upvoted this complaint (Click to undo)' : 'Upvote this complaint to raise its priority'}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
                   hasUpvoted
-                    ? 'bg-red-700 text-white border-red-700'
+                    ? 'bg-red-700 text-white border-red-700 shadow-2xs'
                     : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-700 border-neutral-200'
                 }`}
               >
-                <ThumbsUp size={13} className={hasUpvoted ? 'fill-white' : ''} />
-                <span>Upvote</span>
+                <ThumbsUp size={13} className={hasUpvoted ? 'fill-white text-white' : 'text-neutral-500'} />
+                <span>{hasUpvoted ? 'Upvoted' : 'Upvote'}</span>
                 <span className="font-mono text-[11px] font-bold">({currentReport.upvotes})</span>
               </button>
 
