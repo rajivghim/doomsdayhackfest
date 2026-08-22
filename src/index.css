@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Cormorant Garamond', 'Instrument Serif', 'Newsreader', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  
+  body {
+    background-color: #ffffff;
+    color: #171717;
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #ffffff;
+  }
+}
+
+.font-serif-display {
+  font-family: 'Cormorant Garamond', 'Instrument Serif', 'Newsreader', Georgia, serif;
+  font-feature-settings: "liga" 1, "dlig" 1;
+}
+
+.font-sans-ui {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
