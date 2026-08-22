@@ -1,7 +1,0 @@
-{
-  "name": "SewaSathi",
-  "description": "SewaSathi connects citizens with the authorities responsible for fixing what's broken. Report a problem, and watch it move from seen to solved.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
-
