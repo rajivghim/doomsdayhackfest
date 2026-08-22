@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>SewaSathi \u2014 \u0938\u0947\u0935\u093e \u0938\u093e\u0925\u0940 | Civic Issue Reporting for Nepal</title>
+  <meta name="description" content="Report civic issues, get instant AI resource estimates, and rally your community \u2014 built for Nepal's streets." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>\ud83d\udea7</text></svg>" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- TOP BAR                                                       -->
+  <!-- ============================================================ -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="brand-mark">\u091c\u094d\u0928</span>
+      <div class="brand-text">
+        <h1>SewaSathi<span class="brand-dot">.</span></h1>
+        <p>\u0938\u0947\u0935\u093e \u0938\u093e\u0925\u0940 \u00b7 your civic companion</p>
+      </div>
+    </div>
+    <div class="topbar__stats" id="topbarStats">
+      <div class="stat-chip">
+        <span class="stat-chip__value" id="statTotalReports">0</span>
+        <span class="stat-chip__label">Reports</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-chip__value" id="statResolved">0</span>
+        <span class="stat-chip__label">Resolved</span>
+      </div>
+      <div class="stat-chip stat-chip--accent">
+        <span class="stat-chip__value" id="statHighImpact">0</span>
+        <span class="stat-chip__label">High-Impact</span>
+      </div>
+    </div>
+    <div class="topbar__mode" id="dataModeBadge">
+      <span class="dot"></span>
+      <span id="dataModeText">Checking connection\u2026</span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- ========================================================== -->
+    <!-- LEFT: REPORT COMPOSER                                       -->
+    <!-- ========================================================== -->
+    <section class="composer" aria-label="Report a civic issue">
+
+      <div class="panel panel--composer">
+        <div class="panel__eyebrow">FILE A REPORT</div>
+        <h2 class="panel__title">What needs fixing?</h2>
+
+        <!-- Photo capture -->
+        <div class="photo-well" id="photoWell">
+          <input type="file" id="photoInput" accept="image/*" capture="environment" hidden />
+          <div class="photo-well__empty" id="photoEmptyState">
+            <div class="photo-well__icon">\ud83d\udcf7</div>
+            <p>Snap or upload a photo of the issue</p>
+            <button type="button" class="btn btn--ghost" id="photoTriggerBtn">Choose Photo</button>
+          </div>
+          <div class="photo-well__preview hidden" id="photoPreviewWrap">
+            <img id="photoPreview" alt="Uploaded civic issue" />
+            <button type="button" class="photo-well__remove" id="photoRemoveBtn" aria-label="Remove photo">\u2715</button>
+          </div>
+        </div>
+
+        <!-- AI Estimate stamp card -->
+        <div class="estimate-card" id="estimateCard">
+          <div class="estimate-card__header">
+            <span class="estimate-card__label">GEMINI AI \u00b7 RESOURCE ESTIMATE</span>
+            <span class="estimate-card__stamp" id="estimateStamp">AWAITING PHOTO</span>
+          </div>
+
+          <div class="estimate-card__idle" id="estimateIdle">
+            <p>Add a photo above and the AI estimator will fill this receipt automatically.</p>
+          </div>
+
+          <div class="estimate-card__loading hidden" id="estimateLoading">
+            <div class="scan-line"></div>
+            <p>Analyzing image with Gemini 1.5 Flash\u2026</p>
+          </div>
+
+          <div class="estimate-card__result hidden" id="estimateResult">
+            <div class="estimate-row">
+              <span class="estimate-row__label">Category</span>
+              <span class="estimate-row__value" id="estCategory">\u2014</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-row__label">Severity</span>
+              <span class="estimate-row__value" id="estSeverity">\u2014</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-row__label">Est. Budget</span>
+              <span class="estimate-row__value mono" id="estBudget">\u2014</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-row__label">Crew Needed</span>
+              <span class="estimate-row__value mono" id="estCrew">\u2014</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-row__label">Materials</span>
+              <span class="estimate-row__value" id="estMaterials">\u2014</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-row__label">Repair Time</span>
+              <span class="estimate-row__value mono" id="estRepairTime">\u2014</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form fields -->
+        <form id="reportForm" class="report-form">
+          <label class="field">
+            <span class="field__label">Title</span>
+            <input type="text" id="titleInput" placeholder="e.g. Deep pothole outside Ason Chowk" required />
+          </label>
+
+          <label class="field">
+            <span class="field__label">
+              Description
+              <button type="button" class="mic-btn" id="micBtn" aria-pressed="false" title="Speak in Nepali or English">
+                <span class="mic-btn__icon">\ud83c\udfa4</span>
+              </button>
+              <span class="mic-status" id="micStatus"></span>
+            </span>
+            <textarea id="descriptionInput" rows="3" placeholder="Describe the issue, or tap the mic and speak in \u0928\u0947\u092a\u093e\u0932\u0940 / English\u2026"></textarea>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field__label">Category</span>
+              <select id="categorySelect">
+                <option value="Roads">Roads</option>
+                <option value="Sanitation">Sanitation</option>
+                <option value="Electricity">Electricity</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field__label">Severity</span>
+              <select id="severitySelect">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="field">
+            <span class="field__label">Pin exact location</span>
+            <p class="field__hint">Drag the marker to the precise spot.</p>
+            <div id="pickerMap" class="picker-map"></div>
+            <div class="coord-readout mono" id="coordReadout">27.7017, 85.3141</div>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block" id="submitBtn">
+            <span id="submitBtnLabel">Submit Report</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- RIGHT: LIVE MAP + FEED                                      -->
+    <!-- ========================================================== -->
+    <section class="feed" aria-label="Live civic issue map and feed">
+      <div class="panel panel--map">
+        <div class="panel__eyebrow">LIVE CITY MAP</div>
+        <h2 class="panel__title">What's happening around you</h2>
+        <div id="liveMap" class="live-map"></div>
+      </div>
+
+      <div class="panel panel--list">
+        <div class="panel__row">
+          <div>
+            <div class="panel__eyebrow">COMMUNITY FEED</div>
+            <h2 class="panel__title">Reports, sorted by impact</h2>
+          </div>
+          <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab is-active" data-filter="All">All</button>
+            <button class="filter-tab" data-filter="Roads">Roads</button>
+            <button class="filter-tab" data-filter="Sanitation">Sanitation</button>
+            <button class="filter-tab" data-filter="Electricity">Electricity</button>
+            <button class="filter-tab" data-filter="Infrastructure">Infra</button>
+          </div>
+        </div>
+
+        <div class="report-list" id="reportList">
+          <!-- report cards injected by main.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    <p>SewaSathi \u2014 built for the streets of Nepal. \u0928\u0947\u092a\u093e\u0932\u0915\u094b \u092c\u093e\u091f\u094b\u0918\u093e\u091f\u092e\u093e \u0938\u0941\u0927\u093e\u0930 \u0932\u094d\u092f\u093e\u0909\u0901\u0964</p>
+  </footer>
+
+</body>
+</html>
