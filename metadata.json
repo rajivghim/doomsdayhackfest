@@ -1,0 +1,10 @@
+{
+  "name": "SewaSathi Civic Redressal Portal",
+  "description": "Citizen grievance redressal platform with solid waste, tax billing compliance (IRD Bill Jitnuhos), and municipal infrastructure tracking across Nepal.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
