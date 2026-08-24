@@ -37,8 +37,10 @@ npm or yarn
 Installation
 code
 Bash
+
 # Clone the repository
 git clone https://github.com/rajivghim/doomsdayhackfest.git
+
 cd doomsdayhackfest
 
 # Install dependencies
@@ -46,10 +48,12 @@ npm install
 
 # (Optional) Set up environment variables
 cp .env.example .env
+
 # Add your GEMINI_API_KEY if using AI verification features
 
 # Start development server
 npm run dev
+
 The application will run locally on http://localhost:3000.
 
 
