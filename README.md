@@ -49,16 +49,14 @@ npm install
 # (Optional) Set up environment variables
 cp .env.example .env
 
-# Add your GEMINI_API_KEY if using AI verification features
 
 # Start development server
 npm run dev
+
 
 The application will run locally on http://localhost:3000.
 
 
 👥 Built For
 Developed for civic impact at Doomsday Hackfest, empowering citizens and municipalities across Nepal with transparent, technology-driven public governance.
-The following action was requested:
-Building applet...The action produced the following result:
-Build succeeded - the applet is compiled
+
