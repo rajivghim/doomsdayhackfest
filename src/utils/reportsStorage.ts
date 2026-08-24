@@ -1,6 +1,6 @@
 import { ComplaintReport, ReportStatus, IssueCategory, PriorityLevel, TimelineEntry } from '../types';
 
-const STORAGE_KEY = 'sewasathi_complaints_v2';
+const STORAGE_KEY = 'sewasathi_complaints_v4';
 const USER_VOTES_KEY = 'sewasathi_user_upvotes';
 
 // Verified high quality demo online images categorized for problem types
@@ -13,6 +13,9 @@ export const CATEGORY_DEMO_IMAGES: Record<IssueCategory, string[]> = {
   ],
   'Garbage & Waste': [
     'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/7efe66bdfed3b6b37c49c442eef47cfe.jpg',
+  ],
+  'Tax Bill Complaint': [
+    'https://cdn03.hamrobazaar.com/User/Posts/2023/07/12/d3d1fae1-e274-6555-9425-86a7326eb239.webp',
   ],
 };
 
@@ -35,6 +38,12 @@ export const DEMO_PRESET_IMAGES: { category: IssueCategory; label: string; url: 
     tag: 'Waste Obstruction',
     url: 'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/7efe66bdfed3b6b37c49c442eef47cfe.jpg',
   },
+  {
+    category: 'Tax Bill Complaint',
+    label: 'Tax Bill Complaint',
+    tag: 'Refused VAT/PAN Bill',
+    url: 'https://cdn03.hamrobazaar.com/User/Posts/2023/07/12/d3d1fae1-e274-6555-9425-86a7326eb239.webp',
+  },
 ];
 
 export function getRandomCategoryDemoImage(category: IssueCategory): string {
@@ -55,7 +64,10 @@ export function calculatePriorityScore(
   category: IssueCategory = 'Roads & Potholes'
 ): { priority: PriorityLevel; score: number } {
   // Base category multiplier
-  const categoryHazardMultiplier = category === 'Electric Wires' ? 1.4 : category === 'Roads & Potholes' ? 1.2 : 1.0;
+  const categoryHazardMultiplier = 
+    category === 'Electric Wires' ? 1.4 : 
+    category === 'Roads & Potholes' ? 1.2 : 
+    category === 'Tax Bill Complaint' ? 1.1 : 1.0;
   
   const rawScore = (reportCount * 3.5 + upvotes * 1.5) * categoryHazardMultiplier;
   const score = Math.round(rawScore * 10) / 10;
@@ -87,7 +99,7 @@ export const INITIAL_REPORTS: ComplaintReport[] = [
     citizenName: 'Aarav Sharma',
     citizenPhone: '+977 9841234567',
     citizenEmail: 'aarav@example.com',
-    createdAt: 'Aug 20, 2026 • 09:30 AM',
+    createdAt: 'Aug 22, 2026 • 09:30 AM',
     status: 'IN_PROGRESS',
     upvotes: 18,
     reportCount: 5, // 5 citizens reported this exact issue
@@ -95,39 +107,40 @@ export const INITIAL_REPORTS: ComplaintReport[] = [
     priority: 'Emergency',
     department: 'Department of Roads & Infrastructure',
     assignedOfficer: 'Er. Rajesh Manandhar (Senior Inspector)',
+    rewardStatus: 'Not Applicable',
     timeline: [
       {
         id: 't-1',
         status: 'REPORTED',
-        timestamp: 'Aug 20, 2026 • 09:30 AM',
+        timestamp: 'Aug 22, 2026 • 09:30 AM',
         note: 'Initial grievance lodged with photo evidence and GPS verification.',
         actor: 'Citizen Portal',
       },
       {
         id: 't-1b',
         status: 'REPORTED',
-        timestamp: 'Aug 20, 2026 • 10:15 AM',
+        timestamp: 'Aug 22, 2026 • 10:15 AM',
         note: '4 additional citizens flagged this exact road hazard (Merged into SS-1048 with +18 community upvotes).',
         actor: 'Auto-Priority Engine',
       },
       {
         id: 't-2',
         status: 'VERIFIED',
-        timestamp: 'Aug 20, 2026 • 11:15 AM',
+        timestamp: 'Aug 22, 2026 • 11:15 AM',
         note: 'Elevated to EMERGENCY priority by Ward Intake Officer due to high civic upvote volume.',
         actor: 'Municipal Central Desk',
       },
       {
         id: 't-3',
         status: 'ASSIGNED',
-        timestamp: 'Aug 20, 2026 • 02:40 PM',
+        timestamp: 'Aug 22, 2026 • 02:40 PM',
         note: 'Assigned to Dept. of Roads & Infrastructure. Work order #RO-8821 dispatched.',
         actor: 'Ward 4 Administrator',
       },
       {
         id: 't-4',
         status: 'IN_PROGRESS',
-        timestamp: 'Aug 21, 2026 • 10:00 AM',
+        timestamp: 'Aug 22, 2026 • 04:00 PM',
         note: 'Road repair unit on site with heavy rollers. Bitumen patching underway.',
         actor: 'Field Operations Unit',
       },
@@ -135,123 +148,89 @@ export const INITIAL_REPORTS: ComplaintReport[] = [
   },
   {
     id: 'SS-1049',
-    title: 'Hanging Low-Voltage Electric Wires Near School Gate',
-    category: 'Electric Wires',
-    description: 'Dangling overhead power cables sagged below 6 feet, sparking near pedestrian sidewalk and school entrance.',
-    location: 'Lalitpur, Jhamsikhel Lane 2',
-    ward: 'Ward 3',
-    coordinates: { lat: 27.6710, lng: 85.3250 },
-    imageUrl: 'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/68c8bb926d16ad123be8a1b7dbc673cd.jpg',
-    citizenName: 'Sunita Pradhan',
-    citizenPhone: '+977 9812345678',
-    citizenEmail: 'sunita.p@example.com',
-    createdAt: 'Aug 19, 2026 • 07:15 PM',
-    status: 'RESOLVED',
-    upvotes: 12,
-    reportCount: 3,
+    title: 'Overflowing Solid Waste Dump & Decomposing Garbage on Main Corridor',
+    category: 'Garbage & Waste',
+    description: 'Municipal waste container overflowing for over 5 consecutive days. Decomposing solid refuse is spilling onto the pedestrian path, creating a hazardous foul stench and blocking drainage.',
+    location: 'Kathmandu, Kalimati Vegetable Market Corridor',
+    ward: 'Ward 13',
+    coordinates: { lat: 27.6983, lng: 85.3005 },
+    imageUrl: 'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/7efe66bdfed3b6b37c49c442eef47cfe.jpg',
+    citizenName: 'Sunita Shrestha',
+    citizenPhone: '+977 9851098765',
+    citizenEmail: 'sunita.shrestha@example.com',
+    createdAt: 'Aug 22, 2026 • 08:15 AM',
+    status: 'ASSIGNED',
+    upvotes: 14,
+    reportCount: 4,
     priorityScore: 21.0,
-    priority: 'Emergency',
-    department: 'Nepal Electricity & Public Lighting Board',
-    assignedOfficer: 'Sunil Shrestha (Chief Line Technician)',
+    priority: 'High',
+    department: 'Solid Waste Management Bureau & Ward Sanitation',
+    assignedOfficer: 'Bikash Tamang (Sanitation Supervisor)',
+    rewardStatus: 'Not Applicable',
     timeline: [
       {
-        id: 't-11',
+        id: 't-w1',
         status: 'REPORTED',
-        timestamp: 'Aug 19, 2026 • 07:15 PM',
-        note: 'Emergency electrical hazard logged by citizens.',
+        timestamp: 'Aug 22, 2026 • 08:15 AM',
+        note: 'Solid waste overflow grievance submitted with geo-tagged photographic evidence.',
         actor: 'Citizen Portal',
       },
       {
-        id: 't-12',
+        id: 't-w2',
         status: 'VERIFIED',
-        timestamp: 'Aug 19, 2026 • 07:45 PM',
-        note: 'Auto-prioritized to Emergency via live upvoting algorithm.',
-        actor: 'NEA Rapid Response Desk',
+        timestamp: 'Aug 22, 2026 • 09:40 AM',
+        note: 'Ward sanitation field inspection verified non-collection by contractor vehicle.',
+        actor: 'Ward 13 Inspector',
       },
       {
-        id: 't-13',
+        id: 't-w3',
         status: 'ASSIGNED',
-        timestamp: 'Aug 19, 2026 • 08:30 PM',
-        note: 'Assigned to Ward 3 Emergency Line Crew.',
-        actor: 'NEA Central Control',
-      },
-      {
-        id: 't-14',
-        status: 'IN_PROGRESS',
-        timestamp: 'Aug 20, 2026 • 07:00 AM',
-        note: 'Loose poles tightened and insulated cables bundled overhead.',
-        actor: 'Maintenance Crew',
-      },
-      {
-        id: 't-15',
-        status: 'RESOLVED',
-        timestamp: 'Aug 20, 2026 • 11:30 AM',
-        note: 'All cables bundled and secured at safe height. Clearance confirmed.',
-        actor: 'NEA Ward Supervisor',
+        timestamp: 'Aug 22, 2026 • 11:30 AM',
+        note: 'Special waste compacting truck #WM-402 routed to Kalimati corridor for immediate clearing.',
+        actor: 'Solid Waste Management Bureau',
       },
     ],
   },
   {
     id: 'SS-1050',
-    title: 'Uncollected Municipal Waste Pile Spilling on Public Road',
-    category: 'Garbage & Waste',
-    description: 'Overloaded garbage container left uncollected for 4 consecutive days, attracting stray dogs and generating foul odor.',
-    location: 'Kathmandu, Baneshwor Chowk',
-    ward: 'Ward 10',
-    coordinates: { lat: 27.6915, lng: 85.3420 },
-    imageUrl: 'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/7efe66bdfed3b6b37c49c442eef47cfe.jpg',
-    citizenName: 'Bikram Thapa',
-    citizenPhone: '+977 9801234567',
-    citizenEmail: 'bikram.thapa@example.com',
-    createdAt: 'Aug 21, 2026 • 08:00 AM',
+    title: 'Refusal to Issue Official VAT/PAN Invoice by Electronics Vendor',
+    category: 'Tax Bill Complaint',
+    description: 'Vendor charged NPR 18,500 for computer accessories and explicit request for a legitimate VAT/PAN bill was declined. Cashier supplied an unregistered handwritten estimate paper instead.',
+    location: 'Kathmandu, New Road Commercial Arcade',
+    ward: 'Ward 22',
+    coordinates: { lat: 27.7032, lng: 85.3121 },
+    imageUrl: 'https://cdn03.hamrobazaar.com/User/Posts/2023/07/12/d3d1fae1-e274-6555-9425-86a7326eb239.webp',
+    citizenName: 'Bipin Adhikari',
+    citizenPhone: '+977 9861234890',
+    citizenEmail: 'bipin.adhikari@example.com',
+    createdAt: 'Aug 22, 2026 • 11:45 AM',
     status: 'VERIFIED',
-    upvotes: 9,
+    upvotes: 22,
     reportCount: 3,
-    priorityScore: 15.0,
-    priority: 'High',
-    department: 'Solid Waste & Sanitation Bureau',
-    assignedOfficer: 'Pending Sanitation Crew Dispatch',
+    priorityScore: 24.5,
+    priority: 'Emergency',
+    department: 'Inland Revenue Department (IRD) - Compliance & Audit Wing',
+    assignedOfficer: 'Shankar Regmi (IRD Tax Inspector)',
+    vendorName: 'Himalayan Tech Plaza & Gadgets',
+    vendorPAN: '604819230',
+    purchaseAmount: 18500,
+    purchaseDate: '2026-08-22',
+    billDemanded: true,
+    rewardStatus: 'Forwarded to IRD',
     timeline: [
       {
-        id: 't-21',
+        id: 't-tx1',
         status: 'REPORTED',
-        timestamp: 'Aug 21, 2026 • 08:00 AM',
-        note: 'Waste accumulation reported by neighborhood resident.',
+        timestamp: 'Aug 22, 2026 • 11:45 AM',
+        note: 'Tax invoice non-issuance grievance filed under IRD "Bill Jitnuhos" Civic Incentive Scheme with estimate slip photo proof.',
         actor: 'Citizen Portal',
       },
       {
-        id: 't-22',
+        id: 't-tx2',
         status: 'VERIFIED',
-        timestamp: 'Aug 21, 2026 • 08:45 AM',
-        note: 'High community upvote trigger confirmed. Added to daily compactor pickup schedule.',
-        actor: 'Sanitation Bureau Desk',
-      },
-    ],
-  },
-  {
-    id: 'SS-1051',
-    title: 'Broken Road Section & Exposed Manhole Rim',
-    category: 'Roads & Potholes',
-    description: 'Broken tarmac surrounding sewer manhole creating a 10cm wheel trap for bikes.',
-    location: 'Bhaktapur, Durbar Square Approach Road',
-    ward: 'Ward 2',
-    coordinates: { lat: 27.6715, lng: 85.4298 },
-    imageUrl: 'https://res.cloudinary.com/mhjjvqth/image/upload/v1787388222/d03fc2fe363172d449e218a84b557508.jpg',
-    citizenName: 'Nirajan KC',
-    citizenPhone: '+977 9851122334',
-    createdAt: 'Aug 21, 2026 • 02:15 PM',
-    status: 'REPORTED',
-    upvotes: 4,
-    reportCount: 1,
-    priorityScore: 5.8,
-    priority: 'Medium',
-    timeline: [
-      {
-        id: 't-31',
-        status: 'REPORTED',
-        timestamp: 'Aug 21, 2026 • 02:15 PM',
-        note: 'Report logged with verified coordinates. Awaiting inspector review.',
-        actor: 'Citizen Portal',
+        timestamp: 'Aug 22, 2026 • 01:10 PM',
+        note: 'PAN 604819230 verified in Integrated Tax System. Documented non-compliance forward to IRD enforcement flying squad for inspection.',
+        actor: 'IRD Central Compliance Desk',
       },
     ],
   },
@@ -265,8 +244,18 @@ export function getStoredReports(): ComplaintReport[] {
       return INITIAL_REPORTS;
     }
     const parsed: ComplaintReport[] = JSON.parse(data);
+
+    // Merge any missing initial reports by ID so default published cases always show
+    const existingIds = new Set(parsed.map((r) => r.id));
+    const mergedList = [...parsed];
+    for (const initReport of INITIAL_REPORTS) {
+      if (!existingIds.has(initReport.id)) {
+        mergedList.push(initReport);
+      }
+    }
+
     // Ensure backwards compatibility and migrate to Cloudinary verified images
-    const updated = parsed.map((r) => {
+    const updated = mergedList.map((r) => {
       const upvotes = r.upvotes ?? 1;
       const reportCount = r.reportCount ?? 1;
       const { priority, score } = calculatePriorityScore(reportCount, upvotes, r.category);
@@ -281,6 +270,7 @@ export function getStoredReports(): ComplaintReport[] {
         priorityScore: r.priorityScore ?? score,
         priority: r.priority || priority,
         imageUrl: img,
+        rewardStatus: r.rewardStatus || (r.category === 'Tax Bill Complaint' ? 'Pending Review' : 'Not Applicable'),
       };
     });
     saveReports(updated);
@@ -508,6 +498,12 @@ export function createNewReport(data: {
   citizenName?: string;
   citizenPhone?: string;
   citizenEmail?: string;
+  vendorName?: string;
+  vendorPAN?: string;
+  purchaseAmount?: number;
+  purchaseDate?: string;
+  billDemanded?: boolean;
+  rewardStatus?: 'Not Applicable' | 'Pending Review' | 'Forwarded to IRD' | 'Rewarded';
 }): ComplaintReport {
   const currentReports = getStoredReports();
   const nextNum = 1048 + currentReports.length;
@@ -520,7 +516,9 @@ export function createNewReport(data: {
   // Auto-generate clean title if not provided
   let reportTitle = data.title?.trim();
   if (!reportTitle) {
-    if (data.description && data.description.trim().length > 0) {
+    if (data.category === 'Tax Bill Complaint' && data.vendorName) {
+      reportTitle = `No Tax Bill Issued by ${data.vendorName}`;
+    } else if (data.description && data.description.trim().length > 0) {
       reportTitle = data.description.trim().split('\n')[0];
       if (reportTitle.length > 55) {
         reportTitle = reportTitle.slice(0, 52) + '...';
@@ -537,6 +535,9 @@ export function createNewReport(data: {
   const initialReportCount = 1;
   const initialUpvotes = 1;
   const { priority, score } = calculatePriorityScore(initialReportCount, initialUpvotes, data.category);
+
+  const defaultRewardStatus: 'Not Applicable' | 'Pending Review' | 'Forwarded to IRD' | 'Rewarded' =
+    data.rewardStatus || (data.category === 'Tax Bill Complaint' ? 'Pending Review' : 'Not Applicable');
 
   const newReport: ComplaintReport = {
     id: newId,
@@ -556,14 +557,23 @@ export function createNewReport(data: {
     reportCount: initialReportCount,
     priorityScore: score,
     priority: priority,
+    department: data.category === 'Tax Bill Complaint' ? 'Inland Revenue Department (IRD)' : undefined,
+    vendorName: data.vendorName?.trim() || undefined,
+    vendorPAN: data.vendorPAN?.trim() || undefined,
+    purchaseAmount: data.purchaseAmount !== undefined && !isNaN(data.purchaseAmount) ? Number(data.purchaseAmount) : undefined,
+    purchaseDate: data.purchaseDate?.trim() || undefined,
+    billDemanded: data.billDemanded !== undefined ? data.billDemanded : (data.category === 'Tax Bill Complaint' ? true : undefined),
+    rewardStatus: defaultRewardStatus,
     timeline: [
       {
         id: `t-${Date.now()}`,
         status: 'REPORTED',
         timestamp: dateStr,
-        note: data.coordinates 
-          ? `Grievance registered with verified GPS coordinates (${data.coordinates.lat.toFixed(5)}, ${data.coordinates.lng.toFixed(5)}).` 
-          : 'Complaint registered by citizen with location tag.',
+        note: data.category === 'Tax Bill Complaint'
+          ? `Tax bill non-issuance complaint registered against ${data.vendorName || 'vendor'}. Forwarded to IRD compliance desk.`
+          : (data.coordinates 
+            ? `Grievance registered with verified GPS coordinates (${data.coordinates.lat.toFixed(5)}, ${data.coordinates.lng.toFixed(5)}).` 
+            : 'Complaint registered by citizen with location tag.'),
         actor: 'Citizen Portal',
       },
     ],
@@ -580,7 +590,12 @@ export function updateReportStatus(
   newStatus: ReportStatus, 
   note: string, 
   actor: string,
-  extra?: { department?: string; assignedOfficer?: string; priority?: PriorityLevel }
+  extra?: { 
+    department?: string; 
+    assignedOfficer?: string; 
+    priority?: PriorityLevel;
+    rewardStatus?: 'Not Applicable' | 'Pending Review' | 'Forwarded to IRD' | 'Rewarded';
+  }
 ): ComplaintReport[] {
   const reports = getStoredReports();
   const now = new Date();
@@ -603,6 +618,7 @@ export function updateReportStatus(
         department: extra?.department !== undefined ? extra.department : r.department,
         assignedOfficer: extra?.assignedOfficer !== undefined ? extra.assignedOfficer : r.assignedOfficer,
         priority: extra?.priority !== undefined ? extra.priority : r.priority,
+        rewardStatus: extra?.rewardStatus !== undefined ? extra.rewardStatus : r.rewardStatus,
         timeline: [...r.timeline, newTimelineEntry],
       };
     }

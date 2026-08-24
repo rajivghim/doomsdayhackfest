@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   FileEdit,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { ComplaintReport, ReportStatus } from '../types';
 import { getStoredReports, updateReportStatus } from '../utils/reportsStorage';
@@ -29,6 +30,7 @@ interface AuthorityDashboardProps {
 }
 
 const DEPARTMENTS = [
+  'Inland Revenue Department (IRD) - Bill Compliance',
   'Department of Roads & Transport',
   'Water Supply & Sanitation Division (KUKL)',
   'Nepal Electricity & Public Lighting Board',
@@ -47,12 +49,14 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
   const [reports, setReports] = useState<ComplaintReport[]>(() => getStoredReports());
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'ALL' | ReportStatus>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected report management states
   const [actionNote, setActionNote] = useState('');
   const [assignDept, setAssignDept] = useState(DEPARTMENTS[0]);
   const [assignOfficer, setAssignOfficer] = useState('');
+  const [rewardStatusSelect, setRewardStatusSelect] = useState<ComplaintReport['rewardStatus']>('Pending Review');
   const [toastMessage, setToastMessage] = useState('');
 
   const refreshData = () => {
@@ -70,6 +74,13 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
     return reports.find((r) => r.id === selectedReportId) || null;
   }, [reports, selectedReportId]);
 
+  // Sync reward status state on selection
+  React.useEffect(() => {
+    if (selectedReport?.rewardStatus) {
+      setRewardStatusSelect(selectedReport.rewardStatus);
+    }
+  }, [selectedReport]);
+
   const stats = useMemo(() => {
     return {
       total: reports.length,
@@ -78,24 +89,28 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
       assigned: reports.filter((r) => r.status === 'ASSIGNED').length,
       inProgress: reports.filter((r) => r.status === 'IN_PROGRESS').length,
       resolved: reports.filter((r) => r.status === 'RESOLVED').length,
+      taxBillCount: reports.filter((r) => r.category === 'Tax Bill Complaint').length,
     };
   }, [reports]);
 
   const filteredReports = useMemo(() => {
     return reports.filter((r) => {
       if (filterStatus !== 'ALL' && r.status !== filterStatus) return false;
+      if (filterCategory !== 'ALL' && r.category !== filterCategory) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
           r.id.toLowerCase().includes(q) ||
           r.title.toLowerCase().includes(q) ||
           r.category.toLowerCase().includes(q) ||
-          r.location.toLowerCase().includes(q)
+          r.location.toLowerCase().includes(q) ||
+          (r.vendorName || '').toLowerCase().includes(q) ||
+          (r.vendorPAN || '').toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [reports, filterStatus, searchQuery]);
+  }, [reports, filterStatus, filterCategory, searchQuery]);
 
   // Authority Actions
   const handleVerify = (reportId: string) => {
@@ -139,6 +154,20 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
     setReports(updated);
     setActionNote('');
     showToast(`Report ${reportId} marked as RESOLVED ✓`);
+    refreshData();
+  };
+
+  const handleUpdateRewardStatus = (reportId: string, newReward: ComplaintReport['rewardStatus']) => {
+    setRewardStatusSelect(newReward);
+    const updated = updateReportStatus(
+      reportId, 
+      selectedReport?.status || 'VERIFIED', 
+      `IRD Scheme Reward Status updated to "${newReward}"`, 
+      authorityName, 
+      { rewardStatus: newReward }
+    );
+    setReports(updated);
+    showToast(`Reward status updated to "${newReward}" ✓`);
     refreshData();
   };
 
@@ -192,7 +221,7 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
       </div>
 
       {/* Metric Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
         <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 shadow-xs">
           <span className="text-[11px] text-neutral-500 font-mono uppercase block mb-1 font-semibold">Total Complaints</span>
           <span className="font-sans-ui text-3xl text-neutral-900 font-bold tracking-tight">{stats.total}</span>
@@ -217,18 +246,22 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
           <span className="text-[11px] text-emerald-800 font-mono uppercase block mb-1 font-semibold">Resolved</span>
           <span className="font-sans-ui text-3xl text-emerald-900 font-bold tracking-tight">{stats.resolved}</span>
         </div>
+        <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 shadow-xs">
+          <span className="text-[11px] text-rose-800 font-mono uppercase block mb-1 font-semibold">🧾 Tax / Bills</span>
+          <span className="font-sans-ui text-3xl text-rose-900 font-bold tracking-tight">{stats.taxBillCount}</span>
+        </div>
       </div>
 
       {/* Main Layout: Split Table & Action Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Complaint Reports List */}
         <div className={`space-y-4 ${selectedReport ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="space-y-2">
             {/* Search */}
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Search by ID, title, category, location..."
+                placeholder="Search by ID, title, vendor, PAN, location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-neutral-300 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-cyan-600 shadow-xs"
@@ -237,20 +270,40 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1 text-[11px] overflow-x-auto pb-1">
-              {(['ALL', 'REPORTED', 'VERIFIED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED'] as const).map((st) => (
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1 text-[11px] overflow-x-auto pb-1">
+                {(['ALL', 'REPORTED', 'VERIFIED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED'] as const).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setFilterStatus(st)}
+                    className={`px-3 py-1 rounded-full border transition-colors cursor-pointer whitespace-nowrap font-mono ${
+                      filterStatus === st
+                        ? 'bg-neutral-900 text-white border-neutral-900 font-semibold'
+                        : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:text-neutral-900'
+                    }`}
+                  >
+                    {st === 'ALL' ? 'All Statuses' : st}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-1 text-[11px]">
                 <button
-                  key={st}
-                  onClick={() => setFilterStatus(st)}
-                  className={`px-3 py-1 rounded-full border transition-colors cursor-pointer whitespace-nowrap font-mono ${
-                    filterStatus === st
-                      ? 'bg-neutral-900 text-white border-neutral-900 font-semibold'
-                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:text-neutral-900'
+                  onClick={() => setFilterCategory(filterCategory === 'Tax Bill Complaint' ? 'ALL' : 'Tax Bill Complaint')}
+                  className={`px-3 py-1 rounded-full border transition-colors cursor-pointer font-mono flex items-center gap-1 ${
+                    filterCategory === 'Tax Bill Complaint'
+                      ? 'bg-amber-600 text-white border-amber-700 font-bold'
+                      : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
                   }`}
                 >
-                  {st === 'ALL' ? 'All' : st}
+                  <span>🧾 Tax Bills Only</span>
+                  {stats.taxBillCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 rounded-full bg-white text-amber-900 text-[10px] font-bold">
+                      {stats.taxBillCount}
+                    </span>
+                  )}
                 </button>
-              ))}
+              </div>
             </div>
           </div>
 
@@ -338,6 +391,76 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
                 <span>Priority: <strong className="text-neutral-900">{selectedReport.priority}</strong></span>
               </div>
 
+              {/* Tax Bill Complaint Specifics */}
+              {(selectedReport.category === 'Tax Bill Complaint' || selectedReport.vendorName) && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-900 font-mono flex items-center gap-1.5">
+                      🧾 IRD Bill Violation Data
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      selectedReport.rewardStatus === 'Rewarded'
+                        ? 'bg-emerald-200 text-emerald-900'
+                        : selectedReport.rewardStatus === 'Forwarded to IRD'
+                        ? 'bg-blue-200 text-blue-900'
+                        : 'bg-amber-200 text-amber-900'
+                    }`}>
+                      {selectedReport.rewardStatus || 'Pending Review'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-neutral-800">
+                    {selectedReport.vendorName && (
+                      <div className="bg-white/80 p-2 rounded-lg border border-amber-200">
+                        <span className="text-[10px] text-neutral-500 font-mono block">Vendor / Shop:</span>
+                        <strong className="text-neutral-900">{selectedReport.vendorName}</strong>
+                      </div>
+                    )}
+                    {selectedReport.vendorPAN && (
+                      <div className="bg-white/80 p-2 rounded-lg border border-amber-200">
+                        <span className="text-[10px] text-neutral-500 font-mono block">Vendor PAN:</span>
+                        <strong className="font-mono text-neutral-900">{selectedReport.vendorPAN}</strong>
+                      </div>
+                    )}
+                    {selectedReport.purchaseAmount !== undefined && (
+                      <div className="bg-white/80 p-2 rounded-lg border border-amber-200">
+                        <span className="text-[10px] text-neutral-500 font-mono block">Purchase Amount:</span>
+                        <strong className="text-neutral-900">NPR {selectedReport.purchaseAmount.toLocaleString()}</strong>
+                      </div>
+                    )}
+                    {selectedReport.purchaseDate && (
+                      <div className="bg-white/80 p-2 rounded-lg border border-amber-200">
+                        <span className="text-[10px] text-neutral-500 font-mono block">Date:</span>
+                        <strong className="text-neutral-900">{selectedReport.purchaseDate}</strong>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reward Status Modifier */}
+                  <div className="pt-2 border-t border-amber-200 flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-[11px] font-semibold text-amber-950 font-mono">
+                      Update IRD Scheme Reward:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(['Pending Review', 'Forwarded to IRD', 'Rewarded', 'Not Applicable'] as const).map((rStat) => (
+                        <button
+                          key={rStat}
+                          type="button"
+                          onClick={() => handleUpdateRewardStatus(selectedReport.id, rStat)}
+                          className={`px-2 py-1 rounded-md text-[10px] font-mono cursor-pointer border transition-all ${
+                            selectedReport.rewardStatus === rStat
+                              ? 'bg-amber-800 text-white border-amber-900 font-bold'
+                              : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-100'
+                          }`}
+                        >
+                          {rStat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Description & Location */}
               <div className="space-y-2 text-xs">
                 <div className="text-neutral-600 font-mono uppercase tracking-wider text-[11px] font-semibold">
@@ -351,6 +474,34 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
                   <span>{selectedReport.location}</span>
                 </div>
               </div>
+
+              {/* Citizen Civic Evidence Photo */}
+              {selectedReport.imageUrl && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-neutral-600 font-mono uppercase tracking-wider text-[11px] font-semibold">
+                      Grievance Evidence Photo
+                    </span>
+                    <a
+                      href={selectedReport.imageUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-cyan-800 hover:text-cyan-950 font-bold bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200 hover:bg-cyan-100 transition-colors"
+                    >
+                      <span>Full Resolution</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-900/5 shadow-inner">
+                    <img
+                      src={selectedReport.imageUrl}
+                      alt={selectedReport.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full max-h-72 object-contain sm:object-cover bg-neutral-950/5"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* ACTION TOOLBAR: Verify → Assign → Update Progress → Resolve */}
               <div className="space-y-4 pt-4 border-t border-neutral-200">

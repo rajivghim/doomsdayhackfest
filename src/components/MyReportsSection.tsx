@@ -33,7 +33,7 @@ interface MyReportsSectionProps {
 }
 
 type FilterStatus = 'ALL' | ReportStatus;
-type FilterDepartment = 'ALL' | 'ROADS' | 'ELECTRIC' | 'WASTE';
+type FilterDepartment = 'ALL' | 'ROADS' | 'ELECTRIC' | 'WASTE' | 'TAX';
 type DistanceRadius = 'ALL' | 'NEAREST' | '1' | '3' | '5' | '10';
 
 const LIFECYCLE_SEQUENCE: { status: ReportStatus; label: string }[] = [
@@ -57,6 +57,7 @@ const DEPARTMENT_TABS: { id: FilterDepartment; label: string; icon: string; desc
   { id: 'ROADS', label: 'Roads & Potholes Dept', icon: '🚧', desc: 'Department of Roads (DoR) & Ward Infra', countCat: 'Roads & Potholes' },
   { id: 'ELECTRIC', label: 'NEA Electric Wires Dept', icon: '⚡', desc: 'Nepal Electricity Authority & Cables', countCat: 'Electric Wires' },
   { id: 'WASTE', label: 'Solid Waste Dept', icon: '♻️', desc: 'Municipal Sanitation & Refuse', countCat: 'Garbage & Waste' },
+  { id: 'TAX', label: 'IRD Tax & Bill Dept', icon: '🧾', desc: 'Inland Revenue & VAT Invoices', countCat: 'Tax Bill Complaint' },
 ];
 
 const STATUS_FILTERS: { id: FilterStatus; label: string }[] = [
@@ -162,6 +163,7 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
       ROADS: localReports.filter((r) => r.category === 'Roads & Potholes').length,
       ELECTRIC: localReports.filter((r) => r.category === 'Electric Wires').length,
       WASTE: localReports.filter((r) => r.category === 'Garbage & Waste').length,
+      TAX: localReports.filter((r) => r.category === 'Tax Bill Complaint').length,
     };
     return counts;
   }, [localReports]);
@@ -177,6 +179,7 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
         if (selectedDept === 'ROADS' && r.category !== 'Roads & Potholes') return false;
         if (selectedDept === 'ELECTRIC' && r.category !== 'Electric Wires') return false;
         if (selectedDept === 'WASTE' && r.category !== 'Garbage & Waste') return false;
+        if (selectedDept === 'TAX' && r.category !== 'Tax Bill Complaint') return false;
         
         // Search query
         if (searchQuery.trim()) {
@@ -187,7 +190,9 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
           const matchWard = (r.ward || '').toLowerCase().includes(q);
           const matchTitle = r.title.toLowerCase().includes(q);
           const matchDesc = r.description.toLowerCase().includes(q);
-          if (!matchId && !matchCat && !matchLoc && !matchWard && !matchTitle && !matchDesc) {
+          const matchVendor = (r.vendorName || '').toLowerCase().includes(q);
+          const matchPAN = (r.vendorPAN || '').toLowerCase().includes(q);
+          if (!matchId && !matchCat && !matchLoc && !matchWard && !matchTitle && !matchDesc && !matchVendor && !matchPAN) {
             return false;
           }
         }
@@ -312,7 +317,7 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
 
       {/* Clean Department Groups / Tabs */}
       <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {DEPARTMENT_TABS.map((dept) => {
             const isSelected = selectedDept === dept.id;
             const count = deptCounts[dept.id];
@@ -464,8 +469,8 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
               >
                 <div>
                   {/* Card Top: Thumbnail + Header */}
-                  <div className="flex items-start gap-3.5 mb-3">
-                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl overflow-hidden shrink-0 bg-neutral-100 border border-neutral-200">
+                  <div className="flex items-start gap-4 mb-3.5">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-neutral-100 border border-neutral-200 shadow-2xs">
                       <img
                         src={report.imageUrl}
                         alt={report.title}
@@ -500,9 +505,29 @@ export const MyReportsSection: React.FC<MyReportsSectionProps> = ({
                         {report.title}
                       </h3>
 
-                      <span className="inline-block text-[11px] font-medium text-neutral-600 mt-0.5">
-                        {report.category}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="inline-block text-[11px] font-medium text-neutral-600">
+                          {report.category}
+                        </span>
+
+                        {report.vendorName && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                            🏪 {report.vendorName}
+                          </span>
+                        )}
+
+                        {report.rewardStatus && report.rewardStatus !== 'Not Applicable' && (
+                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                            report.rewardStatus === 'Rewarded'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
+                              : report.rewardStatus === 'Forwarded to IRD'
+                              ? 'bg-blue-50 text-blue-800 border-blue-200'
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}>
+                            Reward: {report.rewardStatus}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 

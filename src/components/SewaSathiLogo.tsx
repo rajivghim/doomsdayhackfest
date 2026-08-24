@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SewaSathiLogoProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   showText?: boolean;
   textColor?: string;
+  onClick?: () => void;
 }
 
 export const SewaSathiLogo: React.FC<SewaSathiLogoProps> = ({
@@ -12,53 +13,42 @@ export const SewaSathiLogo: React.FC<SewaSathiLogoProps> = ({
   size = 'md',
   showText = true,
   textColor = 'text-neutral-900',
+  onClick,
 }) => {
+  const [hasError, setHasError] = useState(false);
+
   const iconSizes = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-11 h-11',
-    xl: 'w-14 h-14',
+    sm: 'w-10 h-10',
+    md: 'w-13 h-13 sm:w-14 sm:h-14',
+    lg: 'w-18 h-18',
+    xl: 'w-24 h-24',
+    '2xl': 'w-28 h-28 sm:w-32 sm:h-32',
   };
 
   const textSizes = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-2xl',
-    xl: 'text-3xl',
+    sm: 'text-base',
+    md: 'text-xl sm:text-2xl',
+    lg: 'text-2xl sm:text-3xl',
+    xl: 'text-3xl sm:text-4xl',
+    '2xl': 'text-4xl sm:text-5xl',
   };
 
   return (
-    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* Emblem Logo SVG */}
-      <div className={`relative ${iconSizes[size]} shrink-0 rounded-xl bg-gradient-to-br from-red-700 via-red-800 to-red-950 p-1.5 text-white shadow-md shadow-red-900/20 flex items-center justify-center border border-red-600/30`}>
-        <svg
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full"
-        >
-          {/* Outer Crest Ring */}
-          <circle cx="24" cy="24" r="21" stroke="#fecaca" strokeWidth="1.5" strokeDasharray="2 3" opacity="0.6" />
-          
-          {/* Stylized S Curve and Protective Wings / Hands */}
-          <path
-            d="M14 18C14 14.6863 16.6863 12 20 12H28C31.3137 12 34 14.6863 34 18C34 21.3137 31.3137 24 28 24H20C16.6863 24 14 26.6863 14 30C14 33.3137 16.6863 36 20 36H28C31.3137 36 34 33.3137 34 30"
-            stroke="#ffffff"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          
-          {/* Central Civic Resolve Flame / Pin Dot */}
-          <circle cx="24" cy="24" r="4.5" fill="#fef08a" />
-          <path
-            d="M24 8L27 13H21L24 8Z"
-            fill="#ffffff"
-          />
-        </svg>
-
-        {/* Small live heartbeat indicator */}
-        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+    <div
+      onClick={onClick}
+      className={`inline-flex items-center gap-2.5 select-none ${onClick ? 'cursor-pointer' : ''} ${className}`}
+    >
+      {/* Official SewaSathi Emblem */}
+      <div className={`relative ${iconSizes[size]} shrink-0 rounded-full bg-white p-0.5 shadow-sm border border-neutral-200/90 overflow-hidden flex items-center justify-center`}>
+        <img
+          src={hasError ? '/sewasathi_logo.jpg' : '/images/sewasathi_logo.jpg'}
+          alt="SewaSathi Official Emblem"
+          referrerPolicy="no-referrer"
+          onError={() => setHasError(true)}
+          className="w-full h-full object-contain rounded-full"
+        />
+        {/* Subtle active status indicator dot */}
+        <span className="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
       </div>
 
       {showText && (
@@ -74,3 +64,4 @@ export const SewaSathiLogo: React.FC<SewaSathiLogoProps> = ({
     </div>
   );
 };
+

@@ -24,6 +24,7 @@ const CATEGORIES: { id: IssueCategory; label: string; icon: string; desc: string
   { id: 'Roads & Potholes', label: 'Roads & Potholes', icon: '🛣️', desc: 'Crater potholes, broken asphalt, sunken utility cuts' },
   { id: 'Electric Wires', label: 'Electric Wires', icon: '⚡', desc: 'Dark streetlights, sparking poles, low-hanging cables' },
   { id: 'Garbage & Waste', label: 'Garbage & Waste', icon: '🗑️', desc: 'Overflowing dumpsters, uncollected waste, litter pile' },
+  { id: 'Tax Bill Complaint', label: 'No Bill Given', icon: '🧾', desc: 'Shop or vendor refused to issue VAT/PAN fiscal bill' },
 ];
 
 const SAMPLE_PRESET_IMAGES = [
@@ -38,6 +39,10 @@ const SAMPLE_PRESET_IMAGES = [
   {
     name: 'Garbage Heap Photo',
     url: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Refused VAT/PAN Bill',
+    url: 'https://cdn03.hamrobazaar.com/User/Posts/2023/07/12/d3d1fae1-e274-6555-9425-86a7326eb239.webp'
   }
 ];
 
@@ -55,6 +60,13 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
   const [citizenEmail, setCitizenEmail] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
+
+  // Tax bill specific fields
+  const [vendorName, setVendorName] = useState('');
+  const [vendorPAN, setVendorPAN] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [billDemanded, setBillDemanded] = useState(true);
   
   // Submission success state
   const [submittedReport, setSubmittedReport] = useState<ComplaintReport | null>(null);
@@ -75,7 +87,11 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
+    if (category === 'Tax Bill Complaint' && !vendorName.trim()) {
+      setErrorMsg('Please enter the vendor / shop name.');
+      return;
+    }
+    if (!title.trim() && category !== 'Tax Bill Complaint') {
       setErrorMsg('Please enter an issue title or summary.');
       return;
     }
@@ -92,8 +108,11 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
     setErrorMsg('');
 
     setTimeout(() => {
+      const isTaxComplaint = category === 'Tax Bill Complaint';
+      const parsedAmount = purchaseAmount ? parseFloat(purchaseAmount) : undefined;
+
       const created = createNewReport({
-        title: title.trim(),
+        title: title.trim() || (isTaxComplaint ? `No Tax Bill Issued by ${vendorName}` : undefined),
         category,
         description: description.trim(),
         location: location.trim(),
@@ -102,6 +121,12 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
         citizenPhone: citizenPhone.trim(),
         citizenEmail: citizenEmail.trim(),
         imageUrl: imageUrl || undefined,
+        vendorName: isTaxComplaint ? vendorName.trim() : undefined,
+        vendorPAN: isTaxComplaint ? vendorPAN.trim() : undefined,
+        purchaseAmount: isTaxComplaint && parsedAmount && !isNaN(parsedAmount) ? parsedAmount : undefined,
+        purchaseDate: isTaxComplaint ? purchaseDate : undefined,
+        billDemanded: isTaxComplaint ? billDemanded : undefined,
+        rewardStatus: isTaxComplaint ? 'Pending Review' : 'Not Applicable',
       });
 
       setIsSubmitting(false);
@@ -241,15 +266,103 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
             </div>
           </div>
 
+          {/* Conditional Fields for Tax Bill Complaint (Bill Jitnuhos Scheme) */}
+          {category === 'Tax Bill Complaint' && (
+            <div className="p-5 rounded-2xl bg-cyan-950/30 border border-cyan-400/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
+                  <span>🧾</span>
+                  <span>Vendor & Tax Invoice Violation (IRD Compliance)</span>
+                </div>
+                <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/30">
+                  Bill Jitnuhos Scheme
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1 font-mono">
+                    Vendor / Shop Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Acme Electronics / Supermarket"
+                    value={vendorName}
+                    onChange={(e) => setVendorName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-cyan-400/30 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1 font-mono">
+                    Vendor PAN / VAT (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 601239845"
+                    value={vendorPAN}
+                    onChange={(e) => setVendorPAN(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-cyan-400/30 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1 font-mono">
+                    Approx. Purchase Amount (NPR)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 2500"
+                    value={purchaseAmount}
+                    onChange={(e) => setPurchaseAmount(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-cyan-400/30 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1 font-mono">
+                    Date of Purchase
+                  </label>
+                  <input
+                    type="date"
+                    value={purchaseDate}
+                    onChange={(e) => setPurchaseDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-900 border border-cyan-400/30 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <label className="flex items-center gap-2.5 text-xs text-neutral-200 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={billDemanded}
+                    onChange={(e) => setBillDemanded(e.target.checked)}
+                    className="w-4 h-4 rounded-md border-cyan-400/40 text-cyan-500 focus:ring-0 bg-neutral-900 cursor-pointer"
+                  />
+                  <span>Citizen explicitly demanded an official VAT/PAN invoice and was denied</span>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* 2. Issue Title */}
           <div>
             <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1.5 font-medium font-mono">
-              2. Complaint Title / Summary *
+              2. Complaint Title / Summary {category === 'Tax Bill Complaint' ? '(Optional)' : '*'}
             </label>
             <input
               type="text"
-              required
-              placeholder="e.g. Deep pothole causing hazard near crossroad"
+              required={category !== 'Tax Bill Complaint'}
+              placeholder={
+                category === 'Tax Bill Complaint'
+                  ? 'Auto-generated (e.g. No Tax Bill Issued by ' + (vendorName || 'Vendor') + ')'
+                  : 'e.g. Deep pothole causing hazard near crossroad'
+              }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/15 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-400 transition-colors"
@@ -356,17 +469,17 @@ export const ReportIssueView: React.FC<ReportIssueViewProps> = ({
             </div>
 
             {imageUrl && (
-              <div className="mt-3 relative rounded-2xl overflow-hidden border border-white/15 h-36 max-w-sm">
-                <img src={imageUrl} alt="Evidence preview" className="w-full h-full object-cover" />
+              <div className="mt-3 relative rounded-2xl overflow-hidden border border-white/20 h-48 sm:h-56 max-w-md bg-black/40 shadow-inner">
+                <img src={imageUrl} alt="Evidence preview" className="w-full h-full object-contain sm:object-cover" />
                 <button
                   type="button"
                   onClick={() => {
                     setImageUrl('');
                     setSelectedFileName('');
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 text-white hover:bg-red-500 transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-red-500 transition-colors cursor-pointer"
                 >
-                  <X size={14} />
+                  <X size={15} />
                 </button>
               </div>
             )}

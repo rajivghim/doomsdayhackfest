@@ -40,6 +40,12 @@ const CATEGORIES: { id: IssueCategory; label: string; icon: string; desc: string
     icon: '🗑️',
     desc: 'Uncollected trash piles, street littering & overflowing bins' 
   },
+  { 
+    id: 'Tax Bill Complaint', 
+    label: 'No Bill Given', 
+    icon: '🧾',
+    desc: 'Shop/vendor refused to issue VAT/PAN fiscal bill (Bill Jitnuhos)' 
+  },
 ];
 
 export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
@@ -54,6 +60,13 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
   const [citizenPhone, setCitizenPhone] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
+
+  // Tax bill specific fields
+  const [vendorName, setVendorName] = useState('');
+  const [vendorPAN, setVendorPAN] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [billDemanded, setBillDemanded] = useState(true);
   
   // Submission state
   const [submittedReport, setSubmittedReport] = useState<ComplaintReport | null>(null);
@@ -82,8 +95,12 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (category === 'Tax Bill Complaint' && !vendorName.trim()) {
+      setErrorMsg('Please enter the vendor / shop name.');
+      return;
+    }
     if (!issueDescription.trim()) {
-      setErrorMsg('Please describe what is broken or needs municipal repair.');
+      setErrorMsg('Please describe what is broken or what tax violation occurred.');
       return;
     }
     if (!locationName.trim()) {
@@ -95,7 +112,11 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
     setErrorMsg('');
 
     setTimeout(() => {
+      const isTaxComplaint = category === 'Tax Bill Complaint';
+      const parsedAmount = purchaseAmount ? parseFloat(purchaseAmount) : undefined;
+
       const created = createNewReport({
+        title: isTaxComplaint && vendorName ? `No Tax Bill Issued by ${vendorName}` : undefined,
         category,
         description: issueDescription.trim(),
         location: locationName.trim(),
@@ -104,6 +125,12 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
         citizenName: 'Citizen',
         citizenPhone: citizenPhone.trim(),
         imageUrl: imageUrl || getRandomCategoryDemoImage(category),
+        vendorName: isTaxComplaint ? vendorName.trim() : undefined,
+        vendorPAN: isTaxComplaint ? vendorPAN.trim() : undefined,
+        purchaseAmount: isTaxComplaint && parsedAmount && !isNaN(parsedAmount) ? parsedAmount : undefined,
+        purchaseDate: isTaxComplaint ? purchaseDate : undefined,
+        billDemanded: isTaxComplaint ? billDemanded : undefined,
+        rewardStatus: isTaxComplaint ? 'Pending Review' : 'Not Applicable',
       });
 
       setIsSubmitting(false);
@@ -217,12 +244,12 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
             </div>
           )}
 
-          {/* 1. Category Selector (Strictly 3 Categories) */}
+          {/* 1. Category Selector */}
           <div>
             <label className="block text-xs font-mono uppercase tracking-wider text-neutral-600 mb-2 font-semibold">
               1. Select Problem Category *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {CATEGORIES.map((cat) => {
                 const isSelected = category === cat.id;
                 return (
@@ -249,15 +276,103 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
             </div>
           </div>
 
+          {/* Conditional Fields for Tax Bill Complaint (Bill Jitnuhos Scheme) */}
+          {category === 'Tax Bill Complaint' && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-red-200 shadow-xs space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-red-900">
+                  <span>🧾</span>
+                  <span>Vendor & Invoice Refusal Information (IRD Compliance Scheme)</span>
+                </div>
+                <span className="text-[10px] font-mono font-semibold uppercase px-2.5 py-0.5 rounded-md bg-red-100 text-red-800 border border-red-300">
+                  Bill Jitnuhos Scheme
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-neutral-700 mb-1 font-semibold">
+                    Vendor / Shop Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. New Road Electronics / Bhatbhateni Outlet"
+                    value={vendorName}
+                    onChange={(e) => setVendorName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-neutral-300 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-red-700 shadow-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-neutral-700 mb-1 font-semibold">
+                    Vendor PAN / VAT (Optional if known)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 601239845"
+                    value={vendorPAN}
+                    onChange={(e) => setVendorPAN(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-neutral-300 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-red-700 shadow-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-neutral-700 mb-1 font-semibold">
+                    Purchase Amount (NPR)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 2500"
+                    value={purchaseAmount}
+                    onChange={(e) => setPurchaseAmount(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-neutral-300 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-red-700 shadow-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-neutral-700 mb-1 font-semibold">
+                    Date of Purchase
+                  </label>
+                  <input
+                    type="date"
+                    value={purchaseDate}
+                    onChange={(e) => setPurchaseDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-red-700 shadow-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <label className="flex items-center gap-2.5 text-xs text-neutral-800 cursor-pointer select-none font-medium">
+                  <input
+                    type="checkbox"
+                    checked={billDemanded}
+                    onChange={(e) => setBillDemanded(e.target.checked)}
+                    className="w-4 h-4 rounded-md border-neutral-300 text-red-700 focus:ring-0 cursor-pointer"
+                  />
+                  <span>Citizen specifically requested an official VAT/PAN tax bill and was refused</span>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* 2. Issue Description */}
           <div>
             <label className="block text-xs font-mono uppercase tracking-wider text-neutral-600 mb-1.5 font-semibold">
-              2. Describe the Problem *
+              2. Describe the Problem {category === 'Tax Bill Complaint' ? '/ Violation' : ''} *
             </label>
             <textarea
               required
               rows={3}
-              placeholder={`Describe the ${category.toLowerCase()} issue... (e.g. Deep pothole causing bike skidding, or sparking hanging wire near pole #14)`}
+              placeholder={
+                category === 'Tax Bill Complaint'
+                  ? 'Describe the transaction, items purchased, what the cashier said when refusing the bill, and whether they issued a non-tax estimate slip instead...'
+                  : `Describe the ${category.toLowerCase()} issue... (e.g. Deep pothole causing bike skidding, or sparking hanging wire near pole #14)`
+              }
               value={issueDescription}
               onChange={(e) => setIssueDescription(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl bg-white border border-neutral-300 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 transition-colors resize-none shadow-xs"
@@ -339,7 +454,7 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
                 <span className="text-[11px] font-medium text-neutral-600 block mb-1.5">
                   Or select a demo photo for civic proof:
                 </span>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {DEMO_PRESET_IMAGES.map((preset) => {
                     const isSelected = imageUrl === preset.url;
                     return (
@@ -357,7 +472,7 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
                             : 'border-neutral-200 hover:border-neutral-300 hover:shadow-xs'
                         }`}
                       >
-                        <div className="relative w-full h-16 rounded-lg overflow-hidden bg-neutral-100 mb-1.5">
+                        <div className="relative w-full h-20 sm:h-22 rounded-xl overflow-hidden bg-neutral-100 mb-1.5 shadow-2xs">
                           <img 
                             src={preset.url} 
                             alt={preset.label} 
@@ -370,10 +485,10 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
                             </div>
                           )}
                         </div>
-                        <span className="text-[10px] font-semibold text-neutral-800 truncate leading-tight">
+                        <span className="text-[11px] font-semibold text-neutral-800 truncate leading-tight">
                           {preset.tag}
                         </span>
-                        <span className="text-[9px] text-neutral-400 truncate">
+                        <span className="text-[10px] text-neutral-500 truncate">
                           {preset.category}
                         </span>
                       </button>
@@ -383,25 +498,25 @@ export const ReportIssueSection: React.FC<ReportIssueSectionProps> = ({
               </div>
 
               {imageUrl && (
-                <div className="mt-3 relative rounded-2xl overflow-hidden border border-neutral-200 h-28 bg-neutral-900">
+                <div className="mt-3 relative rounded-2xl overflow-hidden border border-neutral-300 h-44 sm:h-52 bg-neutral-900/10 shadow-inner">
                   <img 
                     src={imageUrl} 
                     alt="Evidence preview" 
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-contain sm:object-cover bg-neutral-950/5" 
                   />
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-white text-[11px] font-mono flex items-center justify-between">
-                    <span className="truncate">Evidence Attached: {selectedFileName || 'Photo'}</span>
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-2.5 text-white text-[11px] font-mono flex items-center justify-between">
+                    <span className="truncate">✓ Evidence Photo Attached: {selectedFileName || 'Civic Proof'}</span>
                     <button
                       type="button"
                       onClick={() => {
                         setImageUrl('');
                         setSelectedFileName('');
                       }}
-                      className="p-1 rounded-full bg-red-600/90 text-white hover:bg-red-700 transition-colors cursor-pointer shrink-0 ml-2"
+                      className="p-1.5 rounded-full bg-red-600/90 text-white hover:bg-red-700 transition-colors cursor-pointer shrink-0 ml-2"
                       title="Remove image"
                     >
-                      <X size={12} />
+                      <X size={13} />
                     </button>
                   </div>
                 </div>

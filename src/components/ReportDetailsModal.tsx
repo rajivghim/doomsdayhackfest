@@ -8,7 +8,10 @@ import {
   Calendar,
   ThumbsUp,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Receipt,
+  Award,
+  Store
 } from 'lucide-react';
 import { ComplaintReport, ReportStatus } from '../types';
 import { upvoteReport, getUserUpvotes } from '../utils/reportsStorage';
@@ -207,6 +210,70 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
               </div>
             </div>
 
+            {/* Tax Bill / IRD Scheme Details if present */}
+            {(currentReport.category === 'Tax Bill Complaint' || currentReport.vendorName) && (
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
+                    <Receipt size={16} className="text-amber-700" />
+                    <span>Inland Revenue Dept (IRD) Compliance Data</span>
+                  </div>
+                  {currentReport.rewardStatus && currentReport.rewardStatus !== 'Not Applicable' && (
+                    <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                      currentReport.rewardStatus === 'Rewarded'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : currentReport.rewardStatus === 'Forwarded to IRD'
+                        ? 'bg-blue-100 text-blue-800 border-blue-300'
+                        : 'bg-amber-100 text-amber-800 border-amber-300'
+                    }`}>
+                      Reward: {currentReport.rewardStatus}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  {currentReport.vendorName && (
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">Vendor / Shop</span>
+                      <span className="font-bold text-neutral-900">{currentReport.vendorName}</span>
+                    </div>
+                  )}
+
+                  {currentReport.vendorPAN && (
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">Vendor PAN / VAT</span>
+                      <span className="font-bold font-mono text-neutral-900">{currentReport.vendorPAN}</span>
+                    </div>
+                  )}
+
+                  {currentReport.purchaseAmount !== undefined && (
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">Purchase Amount</span>
+                      <span className="font-bold text-neutral-900">NPR {currentReport.purchaseAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  {currentReport.purchaseDate && (
+                    <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block font-mono">Purchase Date</span>
+                      <span className="font-bold text-neutral-900">{currentReport.purchaseDate}</span>
+                    </div>
+                  )}
+                </div>
+
+                {currentReport.billDemanded !== undefined && (
+                  <div className="text-[11px] text-amber-900 flex items-center gap-1.5 pt-1">
+                    <span className="font-semibold">Fiscal Invoice Refusal:</span>
+                    <span>
+                      {currentReport.billDemanded 
+                        ? 'Citizen explicitly demanded a legal VAT/PAN bill and was refused.' 
+                        : 'Citizen reported transaction without tax bill.'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Description & Photo */}
             <div className="space-y-3">
               <div>
@@ -219,13 +286,27 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
               </div>
 
               {currentReport.imageUrl && (
-                <div className="rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100">
-                  <img
-                    src={currentReport.imageUrl}
-                    alt={currentReport.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full max-h-64 object-cover"
-                  />
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-neutral-500">
+                    <span className="font-semibold uppercase tracking-wider text-[11px]">Civic Evidence Photo</span>
+                    <a
+                      href={currentReport.imageUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-cyan-800 hover:text-cyan-950 font-bold bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200 hover:bg-cyan-100 transition-colors"
+                    >
+                      <span>Full Resolution</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-900/5 shadow-inner">
+                    <img
+                      src={currentReport.imageUrl}
+                      alt={currentReport.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full max-h-[460px] object-contain bg-neutral-950/5 hover:scale-[1.01] transition-transform duration-200"
+                    />
+                  </div>
                 </div>
               )}
             </div>

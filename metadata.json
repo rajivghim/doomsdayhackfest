@@ -1,7 +1,10 @@
 {
-  "name": "SewaSathi",
-  "description": "SewaSathi connects citizens with the authorities responsible for fixing what's broken. Report a problem, and watch it move from seen to solved.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "SewaSathi Civic Redressal Portal",
+  "description": "Citizen grievance redressal platform with solid waste, tax billing compliance (IRD Bill Jitnuhos), and municipal infrastructure tracking across Nepal.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
-

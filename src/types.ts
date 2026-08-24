@@ -5,7 +5,8 @@ export type ReportStatus = 'REPORTED' | 'VERIFIED' | 'ASSIGNED' | 'IN_PROGRESS' 
 export type IssueCategory = 
   | 'Roads & Potholes'
   | 'Electric Wires'
-  | 'Garbage & Waste';
+  | 'Garbage & Waste'
+  | 'Tax Bill Complaint';
 
 export type PriorityLevel = 'Low' | 'Medium' | 'High' | 'Emergency';
 
@@ -39,4 +40,12 @@ export interface ComplaintReport {
   department?: string;
   assignedOfficer?: string;
   timeline: TimelineEntry[];
+
+  // Tax Bill Complaint specific fields (IRD "Bill Jitnuhos" scheme)
+  vendorName?: string;
+  vendorPAN?: string; // PAN/VAT number if known
+  purchaseAmount?: number;
+  purchaseDate?: string;
+  billDemanded?: boolean; // did citizen ask for the bill and get refused
+  rewardStatus?: 'Not Applicable' | 'Pending Review' | 'Forwarded to IRD' | 'Rewarded';
 }
